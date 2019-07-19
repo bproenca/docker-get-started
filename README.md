@@ -41,3 +41,47 @@ To view all tasks of a stack:
 
 You can scale the app by changing the replicas value in docker-compose.yml, saving the change, and re-running the docker stack deploy command:  
 `docker stack deploy -c docker-compose.yml getstartedlab`
+
+Take down the app and the swarm:  
+`docker stack rm getstartedlab`  
+`docker swarm leave --force`
+
+## part 4: Swarms
+
+Create a couple of VMs using docker-machine, using the VirtualBox driver:  
+`docker-machine create --driver virtualbox myvm1`  
+`docker-machine create --driver virtualbox myvm2`
+
+Use this command to list the machines and get their IP addresses.  
+`docker-machine ls`
+
+The first machine acts as the manager, which executes management commands and authenticates workers to join the swarm, and the second is a worker.  
+`docker-machine ssh myvm1 "docker swarm init --advertise-addr <myvm1 ip>"`
+
+To add a worker to this swarm, run the following command:
+
+```  
+  docker-machine ssh myvm2 "docker swarm join \
+  --token <token> \
+  <ip>:2377"
+```
+
+Run docker node ls on the manager to view the nodes in this swarm:  
+`docker-machine ssh myvm1 "docker node ls"`
+
+Configure your shell to talk to myvm1:  
+`docker-machine env myvm1`  
+`eval $(docker-machine env myvm1)`
+
+Deploy the app on the swarm manager (on node manager myvm1 - previous command):  
+`docker stack deploy -c docker-compose.yml getstartedlab`
+
+You can access your app from the IP address of either myvm1 or myvm2.
+
+Cleanup and reboot:  
+`docker stack rm getstartedlab`  
+`docker-machine ssh myvm2 "docker swarm leave"`  
+`docker-machine ssh myvm1 "docker swarm leave --force"`
+
+Unsetting docker-machine shell variable settings:  
+`eval $(docker-machine env -u)`
