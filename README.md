@@ -1,3 +1,5 @@
+Tutorial:  
+https://docs.docker.com/get-started/part2/
 
 Build:  
 `docker build --tag=bproenca/get-started:part2 .`
