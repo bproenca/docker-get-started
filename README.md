@@ -109,3 +109,27 @@ Create a ./data directory on the manager:
 
 `docker-machine ssh myvm1 "mkdir ./data"`
 
+## Part 6: Deploy
+
+### Deploy
+
+* `docker-machine start myvm1`
+* `docker-machine start myvm2`
+* `docker-machine ssh myvm1 "docker swarm init --advertise-addr <ip-vm1>"`
+* `docker-machine ssh myvm2 "docker swarm join --token <token> <ip-vm1>:2377"`
+* `docker-machine ssh myvm1 "mkdir ./data"`
+* `eval $(docker-machine env myvm1)`
+* `docker stack deploy -c docker-compose.yml getstartedlab  `
+
+Test **redis** data persist between deployments of this stack:  
+`docker stack rm getstartedlab`  
+`docker stack deploy -c docker-compose.yml getstartedlab`
+
+### Undeploy
+
+* `docker stack rm getstartedlab`
+* `docker-machine ssh myvm2 "docker swarm leave"`
+* `docker-machine ssh myvm1 "docker swarm leave --force"`
+* `eval $(docker-machine env -u)`
+* `docker-machine stop myvm2`
+* `docker-machine stop myvm1`
