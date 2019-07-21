@@ -46,7 +46,9 @@ Take down the app and the swarm:
 `docker stack rm getstartedlab`  
 `docker swarm leave --force`
 
-## part 4: Swarms
+## Part 4: Swarms
+
+*A swarm is a group of machines that are running Docker and joined into a cluster.*
 
 Create a couple of VMs using docker-machine, using the VirtualBox driver:  
 `docker-machine create --driver virtualbox myvm1`  
@@ -85,3 +87,25 @@ Cleanup and reboot:
 
 Unsetting docker-machine shell variable settings:  
 `eval $(docker-machine env -u)`
+
+## Part 5: Stacks
+
+*A stack is a group of interrelated services that share dependencies, and can be orchestrated and scaled together.*
+
+There are a couple of things in the redis specification that make data persist between deployments of this stack:  
+
+* redis always runs on the manager, so it’s always using the same filesystem.
+* redis accesses an arbitrary directory in the host’s file system as /data inside the container, which is where Redis stores data.
+
+
+Together, this is creating a “source of truth” in your host’s physical filesystem for the Redis data. Without this, Redis would store its data in /data inside the container’s filesystem, which would get wiped out if that container were ever redeployed.
+
+This source of truth has two components:  
+
+* The placement constraint you put on the Redis service, ensuring that it always uses the same host.
+* The volume you created that lets the container access ./data (on the host) as /data (inside the Redis container). While containers come and go, the files stored on ./data on the specified host persists, enabling continuity.
+
+Create a ./data directory on the manager:  
+
+`docker-machine ssh myvm1 "mkdir ./data"`
+
